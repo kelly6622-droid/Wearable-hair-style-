@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#fff6f8">
+<title>美发配脸 · 发型试戴</title>
+<style>
+:root{
+  --pink:#ef7fa8;
+  --pink2:#ffd6e4;
+  --ink:#3b2a33;
+  --muted:#87717d;
+  --card:#ffffff;
+  --bg:#fff7fa;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+  background:linear-gradient(180deg,#fff8fb,#f8eef4);
+  color:var(--ink);
+}
+.wrap{max-width:560px;margin:auto;padding:16px 14px 40px}
+.hero{text-align:center;padding:8px 4px 14px}
+.hero h1{margin:3px 0 7px;font-size:31px}
+.hero p{margin:0;color:var(--muted);font-size:14px;line-height:1.6}
+.card{
+  background:var(--card);
+  border-radius:22px;
+  padding:14px;
+  margin-bottom:13px;
+  box-shadow:0 10px 28px rgba(91,49,70,.10);
+}
+.upload{
+  display:block;
+  border:2px dashed #efc4d4;
+  padding:15px;
+  border-radius:17px;
+  text-align:center;
+  cursor:pointer;
+  font-weight:700;
+  color:#a34f70;
+  background:#fffafd;
+}
+input[type=file]{display:none}
+.stage{
+  margin-top:13px;
+  height:480px;
+  max-height:64vh;
+  min-height:370px;
+  background:linear-gradient(145deg,#f8f0f4,#f1e6ec);
+  border-radius:20px;
+  overflow:hidden;
+  position:relative;
+  touch-action:none;
+}
+.placeholder{
+  position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  flex-direction:column;color:#ab97a2;text-align:center;padding:30px
+}
+.placeholder .face{font-size:70px;margin-bottom:8px}
+#photo{
+  position:absolute;inset:0;width:100%;height:100%;
+  object-fit:contain;display:none;
+}
+#hairLayer{
+  position:absolute;
+  left:50%;
+  top:19%;
+  width:72%;
+  height:58%;
+  transform:translate(-50%,0);
+  pointer-events:auto;
+  touch-action:none;
+  display:none;
+}
+.hair-svg{width:100%;height:100%;overflow:visible;filter:drop-shadow(0 9px 8px rgba(0,0,0,.18))}
+.sectionTitle{font-size:14px;font-weight:800;margin-bottom:10px}
+.tabs{display:flex;gap:8px;overflow-x:auto;padding-bottom:3px}
+.tabs::-webkit-scrollbar{display:none}
+.opt{
+  flex:0 0 auto;border:1px solid #ead6df;background:#fff;
+  border-radius:14px;padding:10px 12px;min-width:86px;
+  text-align:center;font-size:12px;color:#5e4853
+}
+.opt.active{border-color:var(--pink);background:#fff1f6;color:#b8416d;font-weight:800}
+.swatches{display:flex;gap:10px;overflow-x:auto;padding:3px 1px}
+.swatch{
+  width:40px;height:40px;border-radius:50%;border:3px solid white;
+  box-shadow:0 0 0 1px #d9c6cf;flex:0 0 auto
+}
+.swatch.active{box-shadow:0 0 0 3px var(--pink)}
+.controls{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+button{
+  border:none;border-radius:13px;padding:12px 7px;
+  background:#f7edf2;color:#6a4b59;font-weight:700;font-size:13px
+}
+button:active{transform:scale(.97)}
+.primary{
+  width:100%;background:linear-gradient(90deg,#f78fb5,#e66e9c);
+  color:white;font-size:16px;padding:14px;margin-top:9px;border-radius:999px
+}
+.note{font-size:11px;color:#9a8490;line-height:1.6;text-align:center;margin-top:10px}
+.badge{
+  display:inline-block;background:#fff0f5;color:#b84d75;border-radius:999px;
+  font-size:11px;padding:5px 9px;margin-bottom:7px
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hero">
+    <div class="badge">微信手机试戴版</div>
+    <h1>美发配脸 ✨</h1>
+    <p>上传一张正面照，试试不同发型和发色。<br>双指/按钮都可以调整假发大小与位置。</p>
+  </div>
+
+  <div class="card">
+    <label class="upload" for="file">📷 上传正面照片</label>
+    <input id="file" type="file" accept="image/*">
+
+    <div class="stage" id="stage">
+      <div class="placeholder" id="ph">
+        <div class="face">🙂</div>
+        <div>先上传一张正面自拍照</div>
+      </div>
+      <img id="photo" alt="">
+      <div id="hairLayer">
+        <svg id="hairSvg" class="hair-svg" viewBox="0 0 300 320"></svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="sectionTitle">① 选择发型</div>
+    <div class="tabs" id="styles"></div>
+  </div>
+
+  <div class="card">
+    <div class="sectionTitle">② 选择发色</div>
+    <div class="swatches" id="colors"></div>
+  </div>
+
+  <div class="card">
+    <div class="sectionTitle">③ 调整假发位置</div>
+    <div class="controls">
+      <button onclick="move(0,-10)">⬆️ 上移</button>
+      <button onclick="scaleHair(1.06)">➕ 放大</button>
+      <button onclick="move(0,10)">⬇️ 下移</button>
+      <button onclick="move(-10,0)">⬅️ 左移</button>
+      <button onclick="resetHair()">↺ 恢复</button>
+      <button onclick="move(10,0)">➡️ 右移</button>
+      <button onclick="scaleHair(.94)">➖ 缩小</button>
+      <button onclick="rotateHair(-2)">↶ 左转</button>
+      <button onclick="rotateHair(2)">↷ 右转</button>
+    </div>
+    <button class="primary" id="shot">保存当前搭配到相册截图</button>
+    <div class="note">提示：微信里可直接截图保存。为了隐私，照片只在你的手机浏览器里显示，不会上传到服务器。</div>
+  </div>
+</div>
+
+<script>
+const hairStyles=[
+ {name:"长直发",svg:`<path d="M58 62 Q78 8 150 12 Q224 8 244 63 Q264 130 248 304 L210 304 Q224 210 210 107 Q199 55 150 47 Q99 55 90 108 Q74 210 91 304 L52 304 Q35 180 58 62Z"/>`},
+ {name:"大波浪",svg:`<path d="M53 62 Q73 9 150 11 Q230 10 247 66 Q260 100 246 139 Q273 174 246 211 Q268 246 238 304 L196 304 Q224 261 204 229 Q230 196 207 165 Q225 126 207 94 Q193 50 150 45 Q105 50 92 96 Q75 129 93 163 Q70 198 96 231 Q72 264 104 304 L57 304 Q29 248 54 210 Q29 174 56 139 Q42 101 53 62Z"/>`},
+ {name:"锁骨发",svg:`<path d="M60 67 Q77 14 150 13 Q224 12 242 68 Q252 118 231 163 Q241 205 218 242 L190 225 Q205 185 196 132 Q190 65 150 49 Q109 65 103 132 Q94 186 110 225 L81 242 Q58 204 69 162 Q48 116 60 67Z"/>`},
+ {name:"波波头",svg:`<path d="M64 67 Q84 16 150 15 Q217 15 237 68 Q251 117 224 174 Q210 210 185 226 L176 198 Q192 167 190 123 Q185 64 150 48 Q113 64 108 124 Q106 165 124 198 L114 227 Q88 211 75 175 Q48 118 64 67Z"/>`},
+ {name:"空气刘海",svg:`<path d="M55 65 Q74 10 150 11 Q229 10 247 67 Q257 129 241 302 L207 302 Q218 210 205 112 Q197 63 150 48 Q103 63 94 113 Q81 211 93 302 L57 302 Q40 182 55 65Z"/><path d="M105 52 Q116 83 127 106 Q137 82 145 52 Q153 84 164 106 Q175 82 190 52 Q166 38 150 37 Q129 38 105 52Z"/>`},
+ {name:"层次卷",svg:`<path d="M53 64 Q75 8 150 12 Q228 9 247 67 Q262 112 241 147 Q268 179 241 211 Q262 245 231 304 L195 304 Q220 266 201 236 Q222 207 204 176 Q224 146 205 113 Q196 56 150 46 Q102 57 94 114 Q74 147 95 176 Q77 208 99 236 Q78 266 105 304 L65 304 Q35 247 58 211 Q31 178 58 147 Q38 111 53 64Z"/><path d="M69 164 Q41 183 67 206 Q43 225 70 244" fill="none" stroke="currentColor" stroke-width="14"/><path d="M230 164 Q259 183 233 206 Q258 225 230 244" fill="none" stroke="currentColor" stroke-width="14"/>`}
+];
+
+const colors=[
+ ["黑茶","#241d22"],
+ ["深棕","#4b3028"],
+ ["巧克力","#6d4435"],
+ ["栗棕","#8a5841"],
+ ["奶茶棕","#a77a62"],
+ ["酒红","#7b2f3f"]
+];
+
+let styleIndex=0,color="#241d22";
+let tx=0,ty=0,sc=1,rot=0;
+const layer=document.getElementById("hairLayer");
+const svg=document.getElementById("hairSvg");
+const photo=document.getElementById("photo");
+const ph=document.getElementById("ph");
+
+function renderHair(){
+  svg.innerHTML=`<g fill="${color}" color="${color}">${hairStyles[styleIndex].svg}</g>`;
+}
+function applyTransform(){
+  layer.style.transform=`translate(calc(-50% + ${tx}px), ${ty}px) scale(${sc}) rotate(${rot}deg)`;
+}
+function move(x,y){tx+=x;ty+=y;applyTransform()}
+function scaleHair(v){sc*=v;applyTransform()}
+function rotateHair(v){rot+=v;applyTransform()}
+function resetHair(){tx=0;ty=0;sc=1;rot=0;applyTransform()}
+
+const styleBox=document.getElementById("styles");
+hairStyles.forEach((s,i)=>{
+ const b=document.createElement("button");
+ b.className="opt"+(i===0?" active":"");
+ b.textContent=s.name;
+ b.onclick=()=>{
+   styleIndex=i;
+   [...styleBox.children].forEach(x=>x.classList.remove("active"));
+   b.classList.add("active");
+   renderHair();
+ };
+ styleBox.appendChild(b);
+});
+
+const colorBox=document.getElementById("colors");
+colors.forEach((c,i)=>{
+ const b=document.createElement("button");
+ b.className="swatch"+(i===0?" active":"");
+ b.style.background=c[1]; b.title=c[0];
+ b.onclick=()=>{
+   color=c[1];
+   [...colorBox.children].forEach(x=>x.classList.remove("active"));
+   b.classList.add("active");
+   renderHair();
+ };
+ colorBox.appendChild(b);
+});
+
+document.getElementById("file").onchange=e=>{
+ const f=e.target.files[0];
+ if(!f)return;
+ const url=URL.createObjectURL(f);
+ photo.src=url;
+ photo.style.display="block";
+ ph.style.display="none";
+ layer.style.display="block";
+ resetHair();
+};
+
+document.getElementById("shot").onclick=()=>{
+ alert("请在微信里使用手机截图保存当前搭配。下一版可以加入真正的一键合成保存。");
+};
+
+let dragging=false,lastX=0,lastY=0;
+layer.addEventListener("pointerdown",e=>{
+ dragging=true;lastX=e.clientX;lastY=e.clientY;layer.setPointerCapture(e.pointerId);
+});
+layer.addEventListener("pointermove",e=>{
+ if(!dragging)return;
+ tx+=e.clientX-lastX;ty+=e.clientY-lastY;
+ lastX=e.clientX;lastY=e.clientY;applyTransform();
+});
+layer.addEventListener("pointerup",()=>dragging=false);
+layer.addEventListener("pointercancel",()=>dragging=false);
+
+renderHair();
+applyTransform();
+</script>
+</body>
+</html>
